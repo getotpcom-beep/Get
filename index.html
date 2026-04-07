@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title></title>
+</head>
+
+<body>
+  
+</body>
+
+</html>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Nexus OTP</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body {
+      margin: 0;
+      background: #0f0f0f;
+      font-family: Arial;
+      display: flex;
+      justify-content: center;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 420px;
+      min-height: 100vh;
+      background: linear-gradient(135deg,#0f0f0f,#1a1a2e);
+      color: white;
+    }
+
+    .container {
+      padding: 15px;
+      padding-bottom: 80px;
+    }
+
+    h2 { text-align: center; }
+
+    .card {
+      background: rgba(255,255,255,0.05);
+      padding: 15px;
+      border-radius: 15px;
+      margin-top: 15px;
+    }
+
+    .plan, .number {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(0,0,0,0.5);
+      padding: 10px;
+      border-radius: 10px;
+      margin-top: 8px;
+    }
+
+    button {
+      border: none;
+      padding: 8px;
+      border-radius: 8px;
+      color: white;
+    }
+
+    .buy-btn { background: orange; }
+    .otp-btn { background: #ff5722; }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+      border-radius: 8px;
+      border: none;
+      background: #111;
+      color: white;
+    }
+
+    .nav {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      max-width: 420px;
+      display: flex;
+      background: #111;
+    }
+
+    .nav button {
+      flex: 1;
+      background: none;
+      font-size: 18px;
+    }
+
+    .page { display: none; }
+    .active { display: block; }
+
+    .deposit-box { text-align: center; }
+
+    .qr-img {
+      width: 220px;
+      margin: 15px 0;
+      border-radius: 12px;
+    }
+
+    .pay-btn {
+      width: 100%;
+      padding: 10px;
+      background: linear-gradient(45deg,#00c853,#00e676);
+      color: black;
+      border-radius: 10px;
+      margin-top: 10px;
+    }
+
+    .profile-box { text-align: center; }
+
+    .avatar {
+      font-size: 40px;
+      margin-bottom: 10px;
+    }
+
+    .save-btn {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      background: linear-gradient(45deg,#2196f3,#00b0ff);
+      border-radius: 10px;
+    }
+
+    .logout-btn {
+      width: 100%;
+      padding: 10px;
+      background: red;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="app">
+
+<div class="container">
+
+  <!-- REGISTER -->
+  <div id="register" class="page">
+    <h2>Create Account</h2>
+    <div class="card">
+      <input id="name" placeholder="Full Name">
+      <input placeholder="Mobile Number">
+      <input type="password" placeholder="Password">
+      <button class="buy-btn" onclick="register()">Register</button>
+    </div>
+  </div>
+
+  <!-- HOME -->
+  <div id="home" class="page">
+    <h2>Nexus OTP</h2>
+
+    <div class="card">
+      <h3>Balance ₹0</h3>
+      <p>Active Plan: None</p>
+    </div>
+
+    <div class="card">
+      <h3>Plans</h3>
+
+      <div class="plan">
+        ₹99 (10 OTP)
+        <button class="buy-btn" onclick="buy(99)">Buy</button>
+      </div>
+
+      <div class="plan">
+        ₹200 (25 OTP)
+        <button class="buy-btn" onclick="buy(200)">Buy</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Numbers</h3>
+      <div id="numbers"></div>
+    </div>
+  </div>
+
+  <!-- DEPOSIT -->
+  <div id="deposit" class="page">
+    <h2>Deposit</h2>
+
+    <div class="card deposit-box">
+      <p>Scan QR & Pay</p>
+      <img src="./ankush.jpg" class="qr-img">
+      <h3 id="amountText">₹0</h3>
+      <button class="pay-btn">I Have Paid</button>
+    </div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div id="settings" class="page">
+    <h2>Profile</h2>
+
+    <div class="card profile-box">
+      <div class="avatar">👤</div>
+      <input placeholder="Full Name">
+      <input placeholder="Email">
+      <input type="password" placeholder="New Password">
+      <button class="save-btn">Save</button>
+    </div>
+
+    <div class="card">
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <button onclick="nav('home')">🏠</button>
+  <button onclick="nav('deposit')">💰</button>
+  <button onclick="nav('settings')">⚙️</button>
+</div>
+
+</div>
+
+<script>
+
+let currentPlan = null;
+
+// SAFE LOAD
+window.onload = function(){
+  try{
+    if(localStorage.getItem("user")){
+      show('home');
+    } else {
+      show('register');
+    }
+    loadNumbers();
+  }catch(e){
+    alert("Error loading page");
+  }
+};
+
+// REGISTER
+function register(){
+  let name = document.getElementById("name").value;
+  if(name==""){
+    alert("Fill details");
+    return;
+  }
+  localStorage.setItem("user", name);
+  show('home');
+}
+
+// LOGOUT
+function logout(){
+  localStorage.removeItem("user");
+  currentPlan = null;
+  show('register');
+}
+
+// NAV
+function nav(page){
+  if(!localStorage.getItem("user")){
+    show('register');
+    return;
+  }
+  show(page);
+}
+
+// SHOW PAGE
+function show(page){
+  let pages = document.querySelectorAll(".page");
+  for(let i=0;i<pages.length;i++){
+    pages[i].classList.remove("active");
+  }
+  document.getElementById(page).classList.add("active");
+}
+
+// BUY
+function buy(amount){
+  currentPlan = amount;
+  show('deposit');
+  document.getElementById("amountText").innerText = "₹"+amount;
+}
+
+// OTP
+function getOtp(){
+  if(!currentPlan){
+    alert("⚠️ Buy Plan First");
+  } else {
+    alert("✅ OTP Sent");
+  }
+}
+
+// NUMBERS
+function loadNumbers(){
+  let box = document.getElementById("numbers");
+  if(!box) return;
+
+  box.innerHTML = "";
+
+  let set = new Set();
+
+  while(set.size < 200){
+    let num = "9" + Math.floor(100000000 + Math.random()*900000000);
+    set.add(num);
+  }
+
+  set.forEach(function(n){
+    let d = document.createElement("div");
+    d.className="number";
+
+    d.innerHTML =
+      '<span>+91 ' + n + '</span>' +
+      '<button class="otp-btn" onclick="getOtp()">Get OTP</button>';
+
+    box.appendChild(d);
+  });
+}
+
+</script>
+
+</body>
+</html>
